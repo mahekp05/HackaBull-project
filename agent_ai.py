@@ -75,7 +75,7 @@ def find_matching_policies(userProfile, db):
 
 #details can be changed
 def format_policies_for_prompt(policies):
-    formatted_policies_list = []
+    policies_list = []
     for policy in policies:
         plan_data = {"Plan ID": policy.get("Plan ID", "N/A"), "benefits": []}
         for benefit_item in policy.get("benefits", []):
@@ -87,8 +87,8 @@ def format_policies_for_prompt(policies):
                 # Add other relevant benefit details if present
             }
             plan_data["benefits"].append(benefit_data)
-        formatted_policies_list.append(plan_data)
-    return json.dumps(formatted_policies_list, indent=2) # indent for readability (optional)
+        policies_list.append(plan_data)
+    return json.dumps(policies_list, indent=2) # indent for readability (optional)
 
 
 def insuranceAgent(userProfile, policies):
@@ -105,8 +105,8 @@ def insuranceAgent(userProfile, policies):
     Explain the key features, benefits, and drawbacks of each policy in a clear and concise manner. 
     Highlight the policies that seem most suitable and explain why. Give top 5-10 policies. 
     """
-    formatted_policies = format_policies_for_prompt(policies)
-    formatted_prompt = prompt.format(userProfie=userProfile,policies=formatted_policies) #
+    ##policies = format_policies_for_prompt(policies)
+    formatted_prompt = prompt.format(userProfie=userProfile,policies=policies) #
 
     try:
         response = GEMINI_MODEL.generate_content(formatted_prompt)
@@ -126,7 +126,7 @@ def financialAgent(userProfile, policies):
     Considering the user's financial situation whose income is ${income} from user data and insurance needs, analyze the cost effectiveness of the recommended policies {policies}. 
     Discuss the long term financial implications of each option and help user understand the value proposition and why they should prefer one policy over another. 
     """
-    formatted_policies = format_policies_for_prompt(policies)
+    #policies = format_policies_for_prompt(policies)
     formatted_prompt = prompt.format(income=income,policies=policies)
 
     try:
@@ -145,8 +145,8 @@ def legalAgent(policies):
     Highlight any potential red flags or important legal considerations the user should be aware of (e.g., exclusions, waiting periods).
     """
     
-    formatted_policies = format_policies_for_prompt(policies)
-    formatted_prompt = prompt.format(formatted_policies)
+    #policies = format_policies_for_prompt(policies)
+    formatted_prompt = prompt.format(policies)
 
     try:
         response = GEMINI_MODEL.generate_content(formatted_prompt)

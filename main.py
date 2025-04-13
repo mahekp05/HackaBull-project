@@ -1,4 +1,15 @@
 import pandas as pd
+import json
+from agentic_ai import insuranceAgent, financialAgent, legalAgent
+
+user_profile = {
+    "name": "Alice Smith",
+    "age": 42,
+    "dependents": 1,
+    "income": 75000.0,
+    "state": "TX",
+    "wants_dental": "yes"
+}
 
 # ------------------------------------
 # Load Data
@@ -13,13 +24,13 @@ benefits_df['StandardComponentId'] = benefits_df['StandardComponentId'].str.stri
 # ------------------------------------
 # User Input
 # ------------------------------------
-print("\nWelcome to Plan4You!\n")
-name = input("👤 What is your name? ")
-age = int(input("🎂 How old are you? "))
-dependents = int(input("🏠 How many dependents live with you? "))
-income = float(input("💰 What is your total annual household income (in USD)? "))
-state = input("🏙️ What state do you live in? (e.g., FL): ").strip().upper()
-wants_dental = input("🦷 Do you want dental coverage? (yes/no): ").strip().lower()
+#print("\nWelcome to Plan4You!\n")
+name = user_profile.get("name")
+age = user_profile.get("age")
+dependents = user_profile.get("dependents")
+income = user_profile.get("income")
+state = user_profile.get("state")
+wants_dental = user_profile.get("wants_dental")
 
 # ------------------------------------
 # Household Calculations
@@ -105,3 +116,48 @@ for pid in plan_ids:
     shown += 1
 
 print(f"\n🎯 Total plans displayed: {shown}")
+
+
+def format_plans_for_ai(df):
+    plans_list = []
+    for pid in df['StandardComponentId'].dropna().unique():
+        plan_df = df[df['StandardComponentId'] == pid]
+        benefits = []
+        plan_info = {"Plan ID": pid, "benefits": []}
+        for _, row in plan_df.iterrows():
+            benefit = {
+                "BenefitName": row['BenefitName'],
+                "IsCovered": row['IsCovered'],
+                "CopayInnTier1": row['CopayInnTier1'],
+                "CoinsInnTier1": row['CoinsInnTier1']
+            }
+            plan_info["benefits"].append(benefit)
+        plans_list.append(plan_info)
+    return plans_list
+
+filtered_plans_list = format_plans_for_ai(state_filtered)
+
+# ------------------------------------
+# Agent Explanations (Using Filtered List)
+# ------------------------------------
+def format_plans_for_agent_prompt(plans):
+    formatted_list = []
+    for plan in plans:
+        formatted_list.append(json.dumps(plan, indent=2))
+    return "\n---\n".join(formatted_list)
+
+if filtered_plans_list:
+    formatted_plans_prompt = format_plans_for_agent_prompt(filtered_plans_list)
+    insurance_recommendation = insuranceAgent(user_profile, formatted_plans_prompt)
+    if insurance_recommendation:
+        print("\nInsurance Recommendation:\n", insurance_recommendation.text)
+
+    financial_analysis = financialAgent(user_profile, formatted_plans_prompt)
+    if financial_analysis:
+        print("\nFinancial Analysis:\n", financial_analysis.text)
+
+    legal_review = legalAgent(formatted_plans_prompt)
+    if legal_review:
+        print("\nLegal Review:\n", legal_review.text)
+else:
+    print("\nNo matching plans found based on your criteria.")
