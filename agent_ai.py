@@ -72,13 +72,23 @@ def find_matching_policies(userProfile, db):
     client.close()
     return matching_policies
 
+
 #details can be changed
 def format_policies_for_prompt(policies):
-    policy_strings = []
+    formatted_policies_list = []
     for policy in policies:
-        details = f"Policy Name: {policy.get('name', 'N/A')}, Coverage: {policy.get('coverage', 'N/A')}, Monthly Premium: ${policy.get('monthly_premium', 'N/A')}"
-        policy_strings.append(details)
-    return "\n".join(policy_strings)
+        plan_data = {"Plan ID": policy.get("Plan ID", "N/A"), "benefits": []}
+        for benefit_item in policy.get("benefits", []):
+            benefit_data = {
+                "Benefit": benefit_item.get("Benefit", "N/A"),
+                "Covered": benefit_item.get("Covered", "N/A"),
+                "Copay Tier 1": benefit_item.get("Copay Tier 1", "N/A"),
+                "Coinsurance Tier 1": benefit_item.get("Coinsurance Tier 1", "N/A"),
+                # Add other relevant benefit details if present
+            }
+            plan_data["benefits"].append(benefit_data)
+        formatted_policies_list.append(plan_data)
+    return json.dumps(formatted_policies_list, indent=2) # indent for readability (optional)
 
 
 def insuranceAgent(userProfile, policies):
@@ -87,7 +97,13 @@ def insuranceAgent(userProfile, policies):
 
     You main goals is to assists clients in selecting insurance policies that best meets their needs, preferences and budgets
     
-    Based on the following insurance policies {policies} and the user's needs {userProfile}, explain the key features, benefits, and drawbacks of each policy in a clear and concise manner. Highlight the policies that seem most suitable and explain why.
+    Based on the following insurance policies:
+      {policies} 
+    and the user's needs:
+      {userProfile}
+      
+    Explain the key features, benefits, and drawbacks of each policy in a clear and concise manner. 
+    Highlight the policies that seem most suitable and explain why. Give top 5-10 policies. 
     """
     formatted_policies = format_policies_for_prompt(policies)
     formatted_prompt = prompt.format(userProfie=userProfile,policies=formatted_policies)
