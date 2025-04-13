@@ -18,13 +18,19 @@ export const healthcareFormSchema = z.object({
     message: "Zip code must be 5 digits.",
   }),
   state: z.string().length(2, {
-    message: "State must be a 2-letter code.",
+    message: "Please select a state.",
   }),
   income: z.string().regex(/^\$?(\d{1,3}(,\d{3})*|\d+)(\.\d{2})?$/, {
     message: "Please enter a valid income amount.",
   }),
   dentalPlanRequired: z.enum(["yes", "no"], {
     required_error: "Please select if dental plan is required.",
+  }),
+  riskTolerance: z.coerce.number().min(0).max(100).default(50),
+  consentGiven: z.boolean({
+    required_error: "You must consent to the privacy notice before submitting.",
+  }).refine(val => val === true, {
+    message: "You must consent to the privacy notice before submitting.",
   }),
 });
 
