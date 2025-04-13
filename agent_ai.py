@@ -2,9 +2,10 @@ import google.generativeai as genai
 import json
 
 from pymongo import MongoClient
+from api_key import API_KEY
 
 # Configure your API key using the environment variable (recommended)
-genai.configure(api_key="AIzaSyCYZh91HS2a5fCiojtoVWsPbpBwnrmZLL4")
+genai.configure(API_KEY)
 
 # Now you can use the GenerativeModel class to interact with Gemini
 GEMINI_MODEL = genai.GenerativeModel("gemini-2.0-flash") # Or your preferred model
