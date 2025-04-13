@@ -106,7 +106,7 @@ def insuranceAgent(userProfile, policies):
     Highlight the policies that seem most suitable and explain why. Give top 5-10 policies. 
     """
     formatted_policies = format_policies_for_prompt(policies)
-    formatted_prompt = prompt.format(userProfie=userProfile,policies=formatted_policies)
+    formatted_prompt = prompt.format(userProfie=userProfile,policies=formatted_policies) #
 
     try:
         response = GEMINI_MODEL.generate_content(formatted_prompt)
